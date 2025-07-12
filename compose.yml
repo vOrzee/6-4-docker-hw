@@ -1,0 +1,48 @@
+version: '3.8'
+
+services:
+  leshin-ra-netology-prometheus:
+    depends_on:
+      - leshin-ra-netology-pushgateway
+    restart: always
+    image: prom/prometheus:v2.36.2
+    volumes:
+      - ./6-04/prometheus/:/etc/prometheus/
+      - prometheus_data:/prometheus
+    ports:
+      - 9090:9090
+    networks:
+      - leshin-ra-my-netology-hw
+  leshin-ra-netology-pushgateway:
+    restart: always
+    image: prom/pushgateway
+    ports:
+      - 9091:9091
+    networks:
+      - leshin-ra-my-netology-hw
+  leshin-ra-netology-grafana:
+    depends_on:
+      - leshin-ra-netology-pushgateway
+      - leshin-ra-netology-prometheus
+    restart: always
+    image: grafana/grafana
+    env_file:
+      - ./6-04/lecture_demos/demo4/prometheus/grafana/config.monitoring
+    volumes:
+      - ./6-04/grafana/custom.ini:/etc/grafana/grafana.ini
+      - ./6-04/lecture_demos/demo4/prometheus/grafana/provisioning/:/etc/grafana/provisioning/
+      - grafana_data:/var/lib/grafana
+    ports:
+      - 80:3000
+    networks:
+      - leshin-ra-my-netology-hw
+
+volumes:
+  prometheus_data:
+  grafana_data:
+
+networks:
+  leshin-ra-my-netology-hw:
+    ipam:
+      config:
+        - subnet: 10.5.0.0/16
